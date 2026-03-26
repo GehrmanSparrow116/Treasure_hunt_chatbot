@@ -93,7 +93,13 @@ def chat(user_id: int, message: str, db: Session = Depends(get_db)):
 # ---------------- CONVERSATION ----------------
     if result["type"] == "chat":
         # Fetch ONLY this specific user's chat history securely
-        past_chats = db.query(models.ChatHistory).filter(models.ChatHistory.user_id == user_id).all()
+        # Fetch ONLY the last 10 messages to prevent token explosion
+        past_chats = db.query(models.ChatHistory)\
+                       .filter(models.ChatHistory.user_id == user_id)\
+                       .order_by(models.ChatHistory.id.desc())\
+                       .limit(10).all()
+        # Put them back in chronological order for the AI to read properly
+        past_chats.reverse()
         
         # Pass the history to the AI function
         reply = chat_with_ai(message, past_chats)
@@ -120,11 +126,19 @@ def chat(user_id: int, message: str, db: Session = Depends(get_db)):
 @app.post("/hint")
 def trigger_hint(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        return {"error": "User not found"}
 
-    # 1. Fetch the user's history so we don't repeat hints
-    past_chats = db.query(models.ChatHistory).filter(models.ChatHistory.user_id == user_id).all()
+    # NEW: Check if they are dead or too poor
+    if user.points <= 0:
+        return {"status": "game_over", "reply": "YOU FAILED. EARTH HAS BEEN DESTROYED.", "points": 0}
+    if user.points < 10:
+        return {"status": "wrong", "reply": "Insufficient cosmic energy for a direct hint.", "points": user.points}
+
+    # 1. Fetch only recent history so we don't repeat hints and save tokens
+    past_chats = db.query(models.ChatHistory)\
+                   .filter(models.ChatHistory.user_id == user_id)\
+                   .order_by(models.ChatHistory.id.desc())\
+                   .limit(10).all()
+    past_chats.reverse()
 
     # 2. Pass the history to the AI
     hint_text = get_hint(past_chats)
