@@ -1,0 +1,148 @@
+from fastapi import FastAPI, Depends # pyright: ignore[reportMissingImports]
+from sqlalchemy.orm import Session # pyright: ignore[reportMissingImports]
+from database import SessionLocal, engine
+import models
+from auth import create_user, authenticate_user
+from api import get_hint, chat_with_ai
+from logic import process_input
+from config import SCENARIO
+from fastapi.middleware.cors import CORSMiddleware # pyright: ignore[reportMissingImports]
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/")
+def home():
+    return {"message": " Alien Riddle Game Backend Running"}
+
+@app.get("/start")
+def start_game():
+    return {
+        "scenario": SCENARIO
+    }
+
+@app.post("/register")
+def register(username: str, password: str, db: Session = Depends(get_db)):
+    return create_user(db, username, password)
+
+@app.post("/login")
+def login(username: str, password: str, db: Session = Depends(get_db)):
+    user = authenticate_user(db, username, password)
+
+    if not user:
+        return {"error": "Invalid credentials"}
+
+    return {
+        "message": "Login successful",
+        "user_id": user.id
+    }
+
+# --- THE CHAT ENDPOINT ---
+@app.post("/chat")
+def chat(user_id: int, message: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if not user:
+        return {"error": "User not found"}
+
+    result = process_input(message, user.points)
+
+    if result["type"] == "correct":
+        user.points = result["points"]
+        db.commit()
+        return {
+            "status": "correct",
+            "message": result["message"],
+            "points": user.points
+        }
+
+    if result["type"] == "game_over":
+        user.points = 0
+        db.commit()
+        return {
+            "status": "game_over",
+            "message": result["message"],
+            "points": 0
+        }
+
+    if result["type"] == "wrong":
+        user.points = result["points"]
+        db.commit()
+        return {
+            "status": "wrong",
+            "reply": result["message"],
+            "points": user.points
+        }
+
+# ---------------- CONVERSATION ----------------
+    if result["type"] == "chat":
+        # Fetch ONLY this specific user's chat history securely
+        past_chats = db.query(models.ChatHistory).filter(models.ChatHistory.user_id == user_id).all()
+        
+        # Pass the history to the AI function
+        reply = chat_with_ai(message, past_chats)
+
+        user.points = max(0, user.points - 1)
+        db.commit()
+
+        # Save the new interaction
+        chat_entry = models.ChatHistory(
+            user_id=user_id,
+            user_message=message,
+            bot_response=reply
+        )
+        db.add(chat_entry)
+        db.commit()
+
+        return {
+            "status": "chat",
+            "reply": reply,
+            "points": user.points
+        }
+
+# --- THE BRAND NEW HINT ENDPOINT ---
+@app.post("/hint")
+def trigger_hint(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return {"error": "User not found"}
+
+    # 1. Fetch the user's history so we don't repeat hints
+    past_chats = db.query(models.ChatHistory).filter(models.ChatHistory.user_id == user_id).all()
+
+    # 2. Pass the history to the AI
+    hint_text = get_hint(past_chats)
+    
+    # 3. Deduct the points
+    user.points = max(0, user.points - 10) 
+    
+    # 4. SAVE THE HINT TO THE DATABASE so the AI remembers saying it!
+    chat_entry = models.ChatHistory(
+        user_id=user_id,
+        user_message="[Player requested a dedicated hint]",
+        bot_response=hint_text
+    )
+    db.add(chat_entry)
+    db.commit()
+
+    return {
+        "status": "hint",
+        "reply": hint_text,
+        "points": user.points
+    }

@@ -1,0 +1,170 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: radial-gradient(circle at center, #0B1021 0%, #02040A 100%);
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Faint star background effect */
+.stars {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+}
+
+.card {
+    background-color: #0A101D;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.header {
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 0.7rem;
+    color: #00F0FF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+.title-gradient {
+    background: linear-gradient(90deg, #00F0FF, #A855F7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.description {
+    font-size: 0.85rem;
+    color: #6B7280;
+    margin-bottom: 15px;
+}
+
+.points-display {
+    font-family: 'Orbitron', sans-serif;
+    color: #A855F7;
+    font-weight: bold;
+}
+
+.chat-container {
+    background: #050810;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    height: 250px;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    max-width: 85%;
+}
+
+.message.bot {
+    background: rgba(0, 240, 255, 0.1);
+    border-left: 3px solid #00F0FF;
+    color: #E5E7EB;
+    align-self: flex-start;
+}
+
+.message.user {
+    background: rgba(168, 85, 247, 0.1);
+    border-right: 3px solid #A855F7;
+    color: #ffffff;
+    align-self: flex-end;
+}
+
+.input-area input {
+    width: 100%;
+    padding: 12px;
+    background: #050810;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+}
+
+.input-area input:focus {
+    border-color: #00F0FF;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+/* Matches the "Launch Puzzle" styling */
+.btn-primary {
+    background: rgba(0, 90, 122, 0.3);
+    border: 1px solid #00F0FF;
+    color: #00F0FF;
+}
+
+.btn-primary:hover {
+    background: rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid #4B5563;
+    color: #9CA3AF;
+}
+
+.btn-secondary:hover {
+    border-color: #A855F7;
+    color: #A855F7;
+}
