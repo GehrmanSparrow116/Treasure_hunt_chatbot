@@ -109,9 +109,14 @@ async function sendToBackend(messageText) {
         }
 
         // CORRECTLY PLACED STATUS CHECK
-        if (data.status === "correct" || data.status === "game_over") {
+        if (data.status === "correct" || data.status === "game_over" || data.status === "level_up" || data.status === "win") {
             addMessageToChat(data.message, "bot");
-            document.getElementById('user-input').disabled = true; 
+            if (data.status === "level_up") {
+                addMessageToChat(`Next riddle: ${data.next_riddle}`, "bot");
+            }
+            if (data.status === "win") {
+                document.getElementById('user-input').disabled = true;
+            }
         } else if (data.status === "hint" || data.status === "wrong" || data.status === "chat") {
             addMessageToChat(data.reply, "bot");
         }
