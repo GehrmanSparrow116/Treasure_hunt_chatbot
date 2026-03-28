@@ -103,8 +103,16 @@ VALID_GEMINI_API_KEYS = [key for key in GEMINI_API_KEYS if key]
 
 def fallback_guardian_hint(level):
     if level == 1:
-        return "I am born where gravity devours even light. I cannot be seen, only inferred by what I consume."
-    return "I am the violent death-cry of a massive star, scattering elements so new suns and worlds may form."
+        return """I am born where gravity devours even light,
+A cosmic abyss where shadows take flight.
+I cannot be seen, only inferred by my greed,
+Consuming all matter, every star, every seed."""
+    return """I am the final word spoken by a titan who has no voice,
+A paradox of destruction that leaves creation no choice.
+I am neither the silence nor the song, but the breath between,
+The architect of dust, unseen, unclean.
+From my ruin, the universe dares to dream again,
+But to name me is to know the shape of pain."""
 
 
 def fallback_guardian_chat(level):
@@ -130,15 +138,61 @@ def generate_with_fallback(prompt):
             response = model.generate_content(prompt)
             return response.text
 
-        except ResourceExhausted:
+        except ResourceExhausted as e:
+            print(f"Key exhausted: {e}")
             current_key_index = (current_key_index + 1) % max_attempts
             attempts += 1
 
-        except Exception:
+        except Exception as e:
+            print(f"API Exception: {e}")
             current_key_index = (current_key_index + 1) % max_attempts
             attempts += 1
 
     return None
+
+
+def get_secret_definition(level):
+    if level == 1:
+        return "Definition: 'Oumuamua is the first known interstellar object detected passing through the Solar System. It is highly elongated (cigar-shaped) and tumbling, with an unusual acceleration not caused by gravity (but lacking a visible comet tail)."
+    else:
+        return "Definition: Perigee is the point in the orbit of the Moon or a satellite at which it is nearest to the Earth. It represents the point of maximum gravitational pull and closest approach."
+
+def generate_initial_riddle(level):
+    secret = SECRET_ANSWER_1 if level == 1 else SECRET_ANSWER_2
+    definition = get_secret_definition(level)
+    
+    if level == 1:
+        prompt = f"""
+{SYSTEM_PROMPT}
+
+Mode: RIDDLE GENERATION MODE - Level 1
+Task: Generate an intermediate-level riddle for the secret word: {secret}.
+{definition}
+The riddle should be exactly 3 to 4 lines long.
+Do not reveal the secret word.
+Format: Just the riddle text, no other commentary.
+"""
+    else:
+        prompt = f"""
+{SYSTEM_PROMPT}
+
+Mode: RIDDLE GENERATION MODE - Level 2 (EXPERT DIFFICULTY)
+Task: Generate an extremely vague, cryptic, and abstract riddle for the secret word: {secret}.
+{definition}
+The riddle should be exactly 5 to 6 lines long.
+Rules:
+- Do NOT use any obvious astronomical or scientific terminology.
+- Use abstract metaphors, paradoxes, and philosophical language.
+- The riddle should feel like a puzzle wrapped in poetry — deeply indirect.
+- A player should need to think very hard and laterally to solve it.
+- Do not reveal the secret word or make it easy to guess.
+Format: Just the riddle text, no other commentary.
+"""
+    
+    riddle = generate_with_fallback(prompt)
+    if riddle:
+        return riddle.strip()
+    return fallback_guardian_hint(level) # Use fallback if AI fails
 
 
 def get_hint(level, past_chats=None):
@@ -148,11 +202,13 @@ def get_hint(level, past_chats=None):
             history_text += f"User: {chat.user_message}\nGuardian: {chat.bot_response}\n"
 
     secret = SECRET_ANSWER_1 if level == 1 else SECRET_ANSWER_2
+    definition = get_secret_definition(level)
 
     prompt = f"""
 {SYSTEM_PROMPT}
 
 Secret word: {secret}
+{definition}
 
 History:
 {history_text}
@@ -172,11 +228,13 @@ def chat_with_ai(user_message, level, past_chats=None):
             history_text += f"User: {chat.user_message}\nGuardian: {chat.bot_response}\n"
 
     secret = SECRET_ANSWER_1 if level == 1 else SECRET_ANSWER_2
+    definition = get_secret_definition(level)
 
     prompt = f"""
 {SYSTEM_PROMPT}
 
 Secret word: {secret}
+{definition}
 
 History:
 {history_text}

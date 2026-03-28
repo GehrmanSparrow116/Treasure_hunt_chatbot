@@ -40,7 +40,7 @@ from config import SECRET_ANSWER_1, SECRET_ANSWER_2
 def process_input(user_input, current_points, level):
     user_input_clean = user_input.lower().strip()
 
-    correct_answer = SECRET_ANSWER_1 if level == 1 else SECRET_ANSWER_2
+    correct_answer = (SECRET_ANSWER_1 if level == 1 else SECRET_ANSWER_2).lower()
 
     # CORRECT
     if user_input_clean == correct_answer:

@@ -167,9 +167,9 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
 from auth import create_user, authenticate_user
-from api import get_hint, chat_with_ai
+from config import SCENARIO
 from logic import process_input
-from config import SCENARIO, RIDDLE_1, RIDDLE_2
+from api import get_hint, chat_with_ai, generate_initial_riddle
 from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
@@ -233,9 +233,10 @@ def login(username: str, password: str, db: Session = Depends(get_db)):
 
 @app.get("/start")
 def start_game():
+    riddle = generate_initial_riddle(1)
     return {
         "scenario": SCENARIO,
-        "riddle": RIDDLE_1
+        "riddle": riddle
     }
 
 
@@ -248,7 +249,9 @@ def chat(user_id: int, message: str, db: Session = Depends(get_db)):
 
     user_level = getattr(user, "level", 1) or 1
 
+    print(f"DEBUG: user_id={user_id}, message='{message}', user_level={user_level}, type={type(user_level)}")
     result = process_input(message, user.points, user_level)
+    print(f"DEBUG: result={result}")
 
     # LEVEL UP
     if result["type"] == "level_up":
@@ -256,10 +259,11 @@ def chat(user_id: int, message: str, db: Session = Depends(get_db)):
             user.level = 2
         db.commit()
 
+        riddle_2 = generate_initial_riddle(2)
         return {
             "status": "level_up",
             "message": result["message"],
-            "next_riddle": RIDDLE_2,
+            "next_riddle": riddle_2,
             "points": user.points
         }
 

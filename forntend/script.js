@@ -55,6 +55,10 @@ async function login() {
             document.getElementById('chat-box').innerHTML = ""; 
             addMessageToChat(startData.scenario, "bot");
 
+            if (startData.riddle) {
+                addMessageToChat(startData.riddle, "bot");
+            }
+
         } else {
             msgBox.innerText = "Invalid credentials.";
             msgBox.style.color = "#ef4444";
