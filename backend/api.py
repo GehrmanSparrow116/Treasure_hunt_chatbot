@@ -10,6 +10,7 @@
 #     genai.configure(api_key=GEMINI_API_KEYS[current_key_index])
 #     return genai.GenerativeModel("gemini-2.5-flash")
 
+
 # def generate_with_fallback(prompt):
 #     """Tries to generate content, rotating keys if a rate limit is hit."""
 #     global current_key_index

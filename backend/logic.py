@@ -54,8 +54,16 @@ def process_input(user_input, current_points, level):
             return {
                 "type": "final_win",
                 "message": "YOU HAVE MASTERED THE COSMIC SEQUENCE."
-                "           Next phase unlocked: --name--"
-                "           the riddle for library",
+                "           Next phase unlocked:\n"
+                " "
+                "The god of war stands at his post in the cosmic queue.\n"
+                " "
+                 "The ringed wanderer holds a further station, cold and true.\n"
+                 " "
+                 "Don't add them. Don't multiply. Don't subtract or divide.\n"
+                 " "
+                "Simply place them as they stand — the answer hides inside\n",
+                " "
                 "points": current_points
             }
 
