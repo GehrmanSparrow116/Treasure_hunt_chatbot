@@ -307,6 +307,16 @@ def chat(user_id: int, message: str, db: Session = Depends(get_db)):
 
         reply = chat_with_ai(message, user_level, past_chats)
 
+        user.points = max(0, user.points - 1)
+
+        if user.points == 0:
+            db.commit()
+            return {
+                "status": "game_over",
+                "message": " YOU FAILED.",
+                "points": 0
+            }
+
         chat_entry = models.ChatHistory(
             user_id=user_id,
             user_message=message,
@@ -338,7 +348,7 @@ def hint(user_id: int, db: Session = Depends(get_db)):
 
     hint = get_hint(user_level, past_chats)
 
-    user.points = max(0, user.points - 10)
+    user.points = max(0, user.points - 30)
     db.commit()
 
     return {
