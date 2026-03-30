@@ -171,6 +171,9 @@ from config import SCENARIO
 from logic import process_input
 from api import get_hint, chat_with_ai, generate_initial_riddle
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -184,6 +187,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "forntend")
+
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
 def get_db():
     db = SessionLocal()
     try:
@@ -191,10 +198,10 @@ def get_db():
     finally:
         db.close()
 
-
 @app.get("/")
 def home():
-    return {"message": " Alien Riddle Game Backend Running"}
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    return FileResponse(index_path)
 
 
 # @app.post("/register")
